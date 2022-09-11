@@ -1,17 +1,21 @@
 import math
 
+"Calculates the angle of attack"
 def getAOA(rocTilt, resAngle):
     aoa = abs(rocTilt - resAngle)
     return aoa
 
+"Calculates the moment of inertia"
 def getMomOfInertia(mCur, length):
     MoOfInertia = ((1/12) * mCur * length**2 ) + ((1/4) * mCur * 1.5**2)
     return MoOfInertia
 
+"Calculates the angular acceleration of the rocket"
 def getRotFromThrust(MoOfInertia, torque):
     tiltAcc = torque/MoOfInertia
     return tiltAcc
 
+"Calculates the velocity vector angle"
 def getResAngle(horVel, verVel):
     if horVel >= 0 and verVel >= 0:
         resAngle = math.degrees(math.atan(abs(horVel)/abs(verVel + 0.0000001)))
@@ -24,7 +28,7 @@ def getResAngle(horVel, verVel):
         
     return resAngle
 
-
+"Checks whether the velocity vector and rocket tilt are in the same quadrent"
 def getQuadrant(ThrustResAngle, rocTilt):
     global yDirThrust, xDirThrust, yDirTilt, xDirTilt
     
@@ -61,36 +65,38 @@ def getQuadrant(ThrustResAngle, rocTilt):
         
     return sameQuadrant
 
-def Rigid_body_moment(t_c, zt, clo, cla, xcg, xcp, zcp, cdo, cda, ch, alp):
-	## Aerodynamic coefficient of moment equations
-	# Moment due to trust at 0 AOA
-	M1 = t_c*zt;                
-	# Moment due to zero life coeffcient and skin friction drag             
-	cmo = clo*(((xcg-xcp)/ch)*math.cos(alp) - (zcp/ch)*math.sin(alp)) + cdo*(((xcg-xcp)/ch)*math.sin(alp) + (zcp/ch)*math.cos(alp)); 
-	# Momnet due life coeffcient and drag at an AOA - must be multiplied with AOA
-	cma = cla*(((xcg-xcp)/ch)*math.cos(alp) - (zcp/ch)*math.sin(alp)) + cda*(((xcg-xcp)/ch)*math.sin(alp) + (zcp/ch)*math.cos(alp)); 
-	return M1, cmo, cma
+"Rocket Stability"
+# def Rigid_body_moment(t_c, zt, clo, cla, xcg, xcp, zcp, cdo, cda, ch, alp):
+# 	## Aerodynamic coefficient of moment equations
+# 	# Moment due to trust at 0 AOA
+# 	M1 = t_c*zt;                
+# 	# Moment due to zero life coeffcient and skin friction drag             
+# 	cmo = clo*(((xcg-xcp)/ch)*math.cos(alp) - (zcp/ch)*math.sin(alp)) + cdo*(((xcg-xcp)/ch)*math.sin(alp) + (zcp/ch)*math.cos(alp)); 
+# 	# Momnet due life coeffcient and drag at an AOA - must be multiplied with AOA
+# 	cma = cla*(((xcg-xcp)/ch)*math.cos(alp) - (zcp/ch)*math.sin(alp)) + cda*(((xcg-xcp)/ch)*math.sin(alp) + (zcp/ch)*math.cos(alp)); 
+# 	return M1, cmo, cma
 
-def Tail_moment(v, rho, clat, it, Eo, Ea, Vv, Vh):
-	# Tail Maoment equations
-	# The velocity magnitude around the horizontal fin needs to be determined and studied
-	vt = v-0.12*v;                        
-	n = (0.5*rho*(v**2))/(0.5*rho*(v**2));
-	cmot = n*Vh*clat*(Eo-it);
-	cmat = n*Vh*clat*(Ea-1);
-	return cmot, cmat
+# def Tail_moment(v, rho, clat, it, Eo, Ea, Vv, Vh):
+# 	# Tail Maoment equations
+# 	# The velocity magnitude around the horizontal fin needs to be determined and studied
+# 	vt = v-0.12*v;                        
+# 	n = (0.5*rho*(v**2))/(0.5*rho*(v**2));
+# 	cmot = n*Vh*clat*(Eo-it);
+# 	cmat = n*Vh*clat*(Ea-1);
+# 	return cmot, cmat
 
-def flight_path_correction(cmo,cma, alp, cmat, cm1, rho ,v, M1, m_c, Aw,ro,ri, cmot, ch):
-	cm = cmo + cma*alp + cmot + cmat*alp + cm1; 
-	## Longitudinal Moment Equations
-	# Finding the moment using cm and thrust/vectoring components
-	M = (cm*0.5*rho*(v**2)*Aw*ch)+ M1; 
-	# Finding hte moment of inertia f(mass)
-	MI = (m_c*((ro**2)-(ri**2)))/4;            
-	# Transient pitch due to moment    
-	gam_m = M/MI;               
-	return gam_m   
+# def flight_path_correction(cmo,cma, alp, cmat, cm1, rho ,v, M1, m_c, Aw,ro,ri, cmot, ch):
+# 	cm = cmo + cma*alp + cmot + cmat*alp + cm1; 
+# 	## Longitudinal Moment Equations
+# 	# Finding the moment using cm and thrust/vectoring components
+# 	M = (cm*0.5*rho*(v**2)*Aw*ch)+ M1; 
+# 	# Finding hte moment of inertia f(mass)
+# 	MI = (m_c*((ro**2)-(ri**2)))/4;            
+# 	# Transient pitch due to moment    
+# 	gam_m = M/MI;               
+# 	return gam_m   
 
+"Resets the angle of attack if it goes above 180"
 def CheckAoa(rocTilt, resAngle):
     angOfAtt = rocTilt - resAngle
     if angOfAtt > 180 : 
@@ -99,26 +105,27 @@ def CheckAoa(rocTilt, resAngle):
     return angOfAtt
 
 
-def correctRocketRotation(rocVel, atmosD, thrust, angOfAtt, mCur):        
-    if rocVel > 0 and atmosD > 0:
-    # Variable attriibbutes for the stability correction
-        t_c = thrust
-        alp = angOfAtt
-        v   = rocVel
-        rho = atmosD
-        m_c = mCur
-        # Cl,cd: can be added into the variable attribute section if supplied through SU2 
-        #-------------------------------------------------------------------------------------------- 
-        #------------------------- Correction in flight path angle due to stability -----------------
-        M1, cmo, cma      = Rigid_body_moment(t_c, zt, clo, cla, xcg, xcp, zcp, cdo, cda, ch, alp)
-        cmot, cmat        = Tail_moment(v, atmosD, clat, it, Eo, Vv, Vh)
-        rocTilt_correction= flight_path_correction(cmo,cma, alp, cmat, cm1, rho ,v, M1, m_c, Aw,ro,ri)
+# def correctRocketRotation(rocVel, atmosD, thrust, angOfAtt, mCur):        
+#     if rocVel > 0 and atmosD > 0:
+#     # Variable attriibbutes for the stability correction
+#         t_c = thrust
+#         alp = angOfAtt
+#         v   = rocVel
+#         rho = atmosD
+#         m_c = mCur
+#         # Cl,cd: can be added into the variable attribute section if supplied through SU2 
+#         #-------------------------------------------------------------------------------------------- 
+#         #------------------------- Correction in flight path angle due to stability -----------------
+#         M1, cmo, cma      = Rigid_body_moment(t_c, zt, clo, cla, xcg, xcp, zcp, cdo, cda, ch, alp)
+#         cmot, cmat        = Tail_moment(v, atmosD, clat, it, Eo, Vv, Vh)
+#         rocTilt_correction= flight_path_correction(cmo,cma, alp, cmat, cm1, rho ,v, M1, m_c, Aw,ro,ri)
            
-    else:
-        rocTilt_correction = 0
+#     else:
+#         rocTilt_correction = 0
         
-    return rocTilt_correction
+#     return rocTilt_correction
 
+"Calculates the torque of the rocket"
 def getTorque(isGimbling, tiltDragForce):
     
     if isGimbling:
@@ -131,6 +138,7 @@ def getTorque(isGimbling, tiltDragForce):
     
     return torque
 
+"Function to rotate the rocket"
 def Rotate(torque, omega, rocTilt, mCur, isGimCom):
 
     tiltAcc = torque/mCur
@@ -149,6 +157,7 @@ def Rotate(torque, omega, rocTilt, mCur, isGimCom):
     
     return rocTilt, omega
 
+"Checks if flipover is done for descent"
 def checkRotationDone(isRotDone):
     if isRotDone:
         omega = 0
@@ -158,6 +167,7 @@ def checkRotationDone(isRotDone):
    
 
     # if abs(angOfAtt) > 5 and isGimCom:
+"Forces the rocket tilt to follow the velocity vector"
 def checkAoa(isGimCom, rocTilt, resAngle):
     if isGimCom:
         rocTilt = resAngle # + ((angOfAtt/abs(angOfAtt))*5)

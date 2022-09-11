@@ -1,5 +1,6 @@
 import math    
 
+"Check to acitvate MECO"
 def getMeco(noOfNoz, vacNoz, mecoType, H, hMeco, rocVel, vMeco, nozMeco, mecoStatus):
     if mecoType == 1:	
         if H >= hMeco and mecoStatus == 0:
@@ -13,7 +14,8 @@ def getMeco(noOfNoz, vacNoz, mecoType, H, hMeco, rocVel, vMeco, nozMeco, mecoSta
             mecoStatus = 1 
             
     return mecoStatus, noOfNoz, vacNoz
-             
+
+"Check to activate SECO"             
 def getSeco(noOfNoz, vacNoz, secoType, H, hSeco, rocVel, vSeco, secoStatus):             
     if secoType == 1:	
         if H >= hSeco and secoStatus == 0:
@@ -28,7 +30,8 @@ def getSeco(noOfNoz, vacNoz, secoType, H, hSeco, rocVel, vSeco, secoStatus):
             secoStatus = 1 
             
     return secoStatus, noOfNoz, vacNoz
-    
+
+"Check to activate reburn"    
 def getReBurn(noOfNoz, vacNoz, reBurnInput, mecoStatus, secoStatus, reBurnStatus, reBurnType, H, hReBurn, nozReBurn, rocVel, vReBurn, rocTilt, mFReBurn, isAerospike, iniVacNoz):            
     if  reBurnInput == 1:
         if reBurnType == 1:	
@@ -57,7 +60,8 @@ def getReBurn(noOfNoz, vacNoz, reBurnInput, mecoStatus, secoStatus, reBurnStatus
                 reBurnStatus = 1
                 
     return noOfNoz, vacNoz, mecoStatus, secoStatus, reBurnStatus
-                
+ 
+"Checks if the conditions are right to start gimbling and whether max Q has been crossed"               
 def checkMaxQ(isMaxQ, H, throttleAl, iniNoOfNoz, noOfNoz, vacNoz, isAerospike, rocNoz, rocTilt, thetaP, thrustResAng, maxQType, q, maxQ, qtype, maxQH):                
     if isMaxQ == 0:
         if H <= throttleAl:
@@ -98,7 +102,7 @@ def checkMaxQ(isMaxQ, H, throttleAl, iniNoOfNoz, noOfNoz, vacNoz, isAerospike, r
                 
     return noOfNoz, vacNoz, isMaxQ, qtype, thetaP, thrustResAng, maxQ
 
-
+"Gets the rocket velocity at 100km"
 def checkKarmanVelocity(H, alt, rocVel, rocTilt, timeStep):
     if H >= 100000 and alt == 0:
         print(rocVel*timeStep)
@@ -107,6 +111,7 @@ def checkKarmanVelocity(H, alt, rocVel, rocTilt, timeStep):
     
     return alt
 
+"Checks if conditions are met to switch the engines"
 def switchEngine(H, noOfNoz, switchH, isAerospike, isSwitchDone, vacNoz, iniVacNoz):    
     if isAerospike == 2 and not isSwitchDone:
         if H >= switchH:
@@ -115,6 +120,7 @@ def switchEngine(H, noOfNoz, switchH, isAerospike, isSwitchDone, vacNoz, iniVacN
             isSwitchDone = True
     return noOfNoz, vacNoz, isSwitchDone
 
+"Gets the current gimbling angle"
 def getGimblingAngle(isGimbling, resAngle, rocTilt, THETAP):    
     if isGimbling == 1:
         if resAngle > rocTilt:
@@ -129,19 +135,21 @@ def getGimblingAngle(isGimbling, resAngle, rocTilt, THETAP):
         
     return thrustResAng, thetaP
 
-
+"Resets the tilt of the rocket"
 def resetRocketTilt(rocTilt):
    if rocTilt > 360:
        rocTilt = 0
    
    return rocTilt   
-     
+ 
+"Resets the thrust of the cold gas thrusters to 0 if it goes negative to stop negative rotation"    
 def resetColdGasThrust(coldGasThrust):           
    if coldGasThrust <= 0:
        coldGasThrust = 0
        
    return coldGasThrust
 
+"Stops the increase in the distance to the center of mass"
 def stopCOMIncrease(distToCom):   
    if distToCom >= 27:      
        comIncRate = 0
